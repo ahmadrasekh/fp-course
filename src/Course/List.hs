@@ -150,7 +150,7 @@ filter f (hd :. tl) = if f hd then hd :. filter f tl else filter f tl
 --
 -- prop> \x -> x ++ Nil == x
 (++) :: List a -> List a -> List a
-(++) l1 Nil = l1
+-- (++) l1 Nil = l1
 (++) Nil l2 = l2
 (++) (hd :. tl) l2 = hd :. tl ++ l2
 
@@ -168,7 +168,6 @@ infixr 5 ++
 -- prop> \x -> sum (map length x) == length (flatten x)
 flatten :: List (List a) -> List a
 flatten Nil = Nil
--- flatten (hd :. Nil) = hd
 flatten (hd :. tl) = hd ++ flatten tl
 
 -- | Map a function then flatten to a list.
@@ -184,7 +183,7 @@ flatten (hd :. tl) = hd ++ flatten tl
 flatMap :: (a -> List b) -> List a -> List b
 -- flatMap f = flatten . map f -- ok, was being a bit cheeky there
 -- flatMap = error "todo: Course.List#flatMap"
-flatMap f Nil = Nil
+flatMap _ Nil = Nil
 flatMap f (hd :. tl) = (f hd) ++ (flatMap f tl)
 
 -- | Flatten a list of lists to a list (again).
@@ -192,7 +191,7 @@ flatMap f (hd :. tl) = (f hd) ++ (flatMap f tl)
 --
 -- prop> \x -> let types = x :: List (List Int) in flatten x == flattenAgain x
 flattenAgain :: List (List a) -> List a
-flattenAgain = flatMap (\x -> x) -- P.id
+flattenAgain = flatMap (\x -> x) -- or use P.id
 
 -- | Convert a list of optional values to an optional list of values.
 --
@@ -270,7 +269,7 @@ lengthGT4 _ = False
 --
 -- prop> \x -> let types = x :: Int in reverse (x :. Nil) == x :. Nil
 reverse :: List a -> List a
-reverse = aux Nil
+reverse = aux Nil -- initial accumulator is the empty list, keep adding to it from the input list
   where
     aux acc Nil = acc
     aux acc (hd :. tl) = aux (hd :. acc) tl
