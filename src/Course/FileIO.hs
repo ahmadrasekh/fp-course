@@ -1,3 +1,4 @@
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RebindableSyntax #-}
 {-# LANGUAGE ScopedTypeVariables #-}
@@ -10,6 +11,7 @@ import Course.Core
 import Course.Functor
 import Course.List
 import Course.Monad
+import Course.State (put)
 
 {-
 
@@ -79,40 +81,60 @@ the contents of c
 
 -}
 
+-- <$> :: (a -> b) -> k a -> k b      // fmap
+-- <*> :: k (a -> b) -> k a -> k b    // apply
+-- =<< :: (a -> k b) -> k a -> k b    // bind
+
 -- Given the file name, and file contents, print them.
 -- Use @putStrLn@.
 printFile :: FilePath -> Chars -> IO ()
-printFile =
-  error "todo: Course.FileIO#printFile"
+printFile file chars = putStrLn ("============ " ++ file ++ "\n" ++ chars)
 
 -- Given a list of (file name and file contents), print each.
 -- Use @printFile@.
 printFiles :: List (FilePath, Chars) -> IO ()
-printFiles =
-  error "todo: Course.FileIO#printFiles"
+printFiles files =
+  let printOne (filepath, chars) = printFile filepath chars
+   in let xs = (\x -> printOne x) <$> files
+       in let y = sequence xs
+           in void y
 
 -- Given a file name, return (file name and file contents).
 -- Use @readFile@.
+-- readFile :: FilePatch -> IO Chars
 getFile :: FilePath -> IO (FilePath, Chars)
-getFile =
-  error "todo: Course.FileIO#getFile"
+getFile f =
+  let x = readFile f
+   in let y = (\chars -> (f, chars)) <$> x
+       in y
 
 -- Given a list of file names, return list of (file name and file contents).
 -- Use @getFile@.
 getFiles :: List FilePath -> IO (List (FilePath, Chars))
-getFiles =
-  error "todo: Course.FileIO#getFiles"
+getFiles files = sequence (getFile <$> files)
+
+--  in error "todo: Course.FileIO#getFiles"
 
 -- Given a file name, read it and for each line in that file, read and print contents of each.
 -- Use @getFiles@, @lines@, and @printFiles@.
 run :: FilePath -> IO ()
-run =
-  error "todo: Course.FileIO#run"
+run fp =
+  let x = readFile fp
+   in let y = lines <$> x
+       in let z = getFiles =<< y
+           in let q = printFiles =<< z
+               in q
+
+--  printFiles =<< getFiles (f :. Nil)
 
 -- /Tip:/ use @getArgs@ and @run@
 main :: IO ()
 main =
-  error "todo: Course.FileIO#main"
+  getArgs >>= \case
+    Nil -> putStrLn "no args"
+    xs :. _ -> run xs
+
+-- error "todo: Course.FileIO#main"
 
 ----
 
