@@ -2,6 +2,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RebindableSyntax #-}
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE TupleSections #-}
 {-# LANGUAGE NoImplicitPrelude #-}
 
 module Course.FileIO where
@@ -93,20 +94,17 @@ printFile file chars = putStrLn ("============ " ++ file ++ "\n" ++ chars)
 -- Given a list of (file name and file contents), print each.
 -- Use @printFile@.
 printFiles :: List (FilePath, Chars) -> IO ()
-printFiles files =
-  let printOne (filepath, chars) = printFile filepath chars
-   in let xs = (\x -> printOne x) <$> files
-       in let y = sequence xs
-           in void y
+printFiles files = void (sequence ((\(f, cs) -> printFile f cs) <$> files))
+
+--  in let y = sequence xs
+--  in void y
 
 -- Given a file name, return (file name and file contents).
 -- Use @readFile@.
 -- readFile :: FilePatch -> IO Chars
 getFile :: FilePath -> IO (FilePath, Chars)
-getFile f =
-  let x = readFile f
-   in let y = (\chars -> (f, chars)) <$> x
-       in y
+-- getFile f = (\chars -> (f, chars)) <$> readFile f
+getFile f = (f,) <$> readFile f
 
 -- Given a list of file names, return list of (file name and file contents).
 -- Use @getFile@.
@@ -117,15 +115,10 @@ getFiles files = sequence (getFile <$> files)
 
 -- Given a file name, read it and for each line in that file, read and print contents of each.
 -- Use @getFiles@, @lines@, and @printFiles@.
+-- lines :: Chars -> List Chars
+-- getFiles =<< (lines <$> x) is equivalent to getFiles . lines =<< x
 run :: FilePath -> IO ()
-run fp =
-  let x = readFile fp
-   in let y = lines <$> x
-       in let z = getFiles =<< y
-           in let q = printFiles =<< z
-               in q
-
---  printFiles =<< getFiles (f :. Nil)
+run fp = printFiles =<< getFiles . lines =<< readFile fp
 
 -- /Tip:/ use @getArgs@ and @run@
 main :: IO ()
